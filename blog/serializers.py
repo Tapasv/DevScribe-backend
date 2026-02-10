@@ -22,8 +22,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = UserProfile
         fields = [
             'id','username','email','first_name','last_name','role',
-            'bio','avatar','website','location','total_posts',
-            'total_views','total_comments','created_at'
+            'bio','avatar','website','location',
+            'total_posts','total_views','total_comments','created_at'
         ]
         read_only_fields = ['role','total_posts','total_views','total_comments']
 
@@ -52,7 +52,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError({"password": "Passwords don't match"})
+            raise serializers.ValidationError({"password": "Passwords do not match"})
 
         if User.objects.filter(email=attrs['email']).exists():
             raise serializers.ValidationError({"email": "Email already exists"})
@@ -85,7 +85,8 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ['id','name','slug','description','post_count','created_at']
 
     def get_post_count(self, obj):
-        return obj.posts.filter(published=True).count()
+        # SAFE: no assumptions about fields
+        return obj.posts.count()
 
 
 # ================= COMMENTS =================
@@ -95,7 +96,10 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['id','post','user','name','email','content','created_at','approved','user_name']
+        fields = [
+            'id','post','user','name','email',
+            'content','created_at','approved','user_name'
+        ]
         read_only_fields = ['created_at','approved','user']
 
     def get_user_name(self, obj):
@@ -115,8 +119,8 @@ class PostListSerializer(serializers.ModelSerializer):
         model = Post
         fields = [
             'id','title','slug','author','excerpt','category',
-            'image','created_at','updated_at','featured','views',
-            'comment_count','is_author'
+            'image','created_at','updated_at',
+            'featured','views','comment_count','is_author'
         ]
 
     def get_image(self, obj):
@@ -130,7 +134,7 @@ class PostListSerializer(serializers.ModelSerializer):
 
     def get_is_author(self, obj):
         request = self.context.get('request')
-        return request.user == obj.author if request and request.user.is_authenticated else False
+        return bool(request and request.user.is_authenticated and obj.author == request.user)
 
 
 class PostDetailSerializer(serializers.ModelSerializer):
@@ -160,13 +164,16 @@ class PostDetailSerializer(serializers.ModelSerializer):
 
     def get_is_author(self, obj):
         request = self.context.get('request')
-        return request.user == obj.author if request and request.user.is_authenticated else False
+        return bool(request and request.user.is_authenticated and obj.author == request.user)
 
 
 class PostCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ['id','title','slug','content','excerpt','category','image','published','featured']
+        fields = [
+            'id','title','slug','content','excerpt',
+            'category','image','published','featured'
+        ]
         read_only_fields = ['slug']
 
     def create(self, validated_data):
