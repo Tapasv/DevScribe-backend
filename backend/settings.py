@@ -94,6 +94,11 @@ TEMPLATES = [
     },
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://dev-scribe-frontend.vercel.app',
+    'https://devscribe-backend-a4ot.onrender.com',
+]
+
 
 # ===============================
 # DATABASE
@@ -212,3 +217,15 @@ USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 X_FRAME_OPTIONS = 'DENY'
+
+# ===============================
+# RENDER / PROXY FIX (🔥 REQUIRED 🔥)
+# ===============================
+
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+SECURE_SSL_REDIRECT = True
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
