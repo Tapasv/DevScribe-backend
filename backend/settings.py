@@ -1,7 +1,6 @@
 from pathlib import Path
 import os
 from datetime import timedelta
-import dj_database_url
 
 # ===============================
 # BASE DIRECTORY
@@ -14,18 +13,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ===============================
 SECRET_KEY = os.environ.get(
     'SECRET_KEY',
-    'django-insecure-dev-only-key'
+    'django-insecure-@rixz6eolk#x7!t2tk__72b7%0e8b@0d+_89k=#%78*)6pi*9+'
 )
 
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-
-# ===============================
-# ALLOWED HOSTS
-# ===============================
 ALLOWED_HOSTS = os.environ.get(
     'ALLOWED_HOSTS',
-    '127.0.0.1,localhost,devscribe-backend-a4ot.onrender.com'
+    '127.0.0.1,localhost'
 ).split(',')
 
 
@@ -72,6 +67,7 @@ MIDDLEWARE = [
 # URL / WSGI
 # ===============================
 ROOT_URLCONF = 'backend.urls'
+
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 
@@ -94,21 +90,17 @@ TEMPLATES = [
     },
 ]
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://dev-scribe-frontend.vercel.app',
-    'https://devscribe-backend-a4ot.onrender.com',
-]
-
 
 # ===============================
 # DATABASE
 # ===============================
+import dj_database_url
+
 if os.environ.get('DATABASE_URL'):
     DATABASES = {
         'default': dj_database_url.config(
             default=os.environ.get('DATABASE_URL'),
-            conn_max_age=600,
-            ssl_require=True
+            conn_max_age=600
         )
     }
 else:
@@ -149,7 +141,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 # ===============================
-# MEDIA FILES
+# MEDIA FILES (🔥 FIXED 🔥)
 # ===============================
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -162,23 +154,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # ===============================
-# CORS & CSRF
+# CORS
 # ===============================
 CORS_ALLOWED_ORIGINS = os.environ.get(
     'CORS_ALLOWED_ORIGINS',
-    'http://localhost:5173,https://dev-scribe-frontend.vercel.app'
+    'http://localhost:5173,http://localhost:3000'
 ).split(',')
 
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_TRUSTED_ORIGINS = os.environ.get(
-    'CSRF_TRUSTED_ORIGINS',
-    'http://localhost:5173,https://dev-scribe-frontend.vercel.app'
-).split(',')
-
 
 # ===============================
-# REST FRAMEWORK
+# DRF
 # ===============================
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -203,29 +190,10 @@ SIMPLE_JWT = {
 
 
 # ===============================
-# PRODUCTION SECURITY (RENDER FIX)
+# SECURITY (DEV SAFE)
 # ===============================
-SECURE_SSL_REDIRECT = not DEBUG
-
-SESSION_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SECURE = not DEBUG
-
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-
-USE_X_FORWARDED_HOST = True
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-X_FRAME_OPTIONS = 'DENY'
-
-# ===============================
-# RENDER / PROXY FIX (🔥 REQUIRED 🔥)
-# ===============================
-
-USE_X_FORWARDED_HOST = True
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-SECURE_SSL_REDIRECT = True
-
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+SECURE_BROWSER_XSS_FILTER = False
+SECURE_CONTENT_TYPE_NOSNIFF = False
