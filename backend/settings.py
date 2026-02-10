@@ -4,7 +4,7 @@ from datetime import timedelta
 import dj_database_url
 
 # ===============================
-# BASE DIR
+# BASE DIRECTORY
 # ===============================
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -12,17 +12,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ===============================
 # SECURITY
 # ===============================
-SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-insecure-key')
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY',
+    'django-insecure-dev-only-key'
+)
 
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+
+
+# ===============================
+# ALLOWED HOSTS
+# ===============================
 ALLOWED_HOSTS = os.environ.get(
     'ALLOWED_HOSTS',
-    '127.0.0.1,localhost'
+    '127.0.0.1,localhost,devscribe-backend-a4ot.onrender.com'
 ).split(',')
 
 
 # ===============================
-# APPS
+# APPLICATIONS
 # ===============================
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -32,11 +40,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'corsheaders',
+    # Third-party
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'corsheaders',
 
+    # Local
     'blog',
 ]
 
@@ -88,16 +98,25 @@ TEMPLATES = [
 # ===============================
 # DATABASE
 # ===============================
-DATABASES = {
-    'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600
-    )
-}
+if os.environ.get('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600,
+            ssl_require=True
+        )
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # ===============================
-# PASSWORDS
+# PASSWORD VALIDATION
 # ===============================
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -108,7 +127,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # ===============================
-# I18N
+# INTERNATIONALIZATION
 # ===============================
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
@@ -117,30 +136,44 @@ USE_TZ = True
 
 
 # ===============================
-# STATIC / MEDIA
+# STATIC FILES
 # ===============================
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+
+# ===============================
+# MEDIA FILES
+# ===============================
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # ===============================
-# CORS / CSRF
+# DEFAULT PRIMARY KEY
+# ===============================
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# ===============================
+# CORS & CSRF
 # ===============================
 CORS_ALLOWED_ORIGINS = os.environ.get(
     'CORS_ALLOWED_ORIGINS',
-    'http://localhost:5173'
+    'http://localhost:5173,https://dev-scribe-frontend.vercel.app'
 ).split(',')
 
-CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    'CSRF_TRUSTED_ORIGINS',
+    'http://localhost:5173,https://dev-scribe-frontend.vercel.app'
+).split(',')
 
 
 # ===============================
-# DRF / JWT
+# REST FRAMEWORK
 # ===============================
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -150,20 +183,32 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
 }
 
+
+# ===============================
+# JWT
+# ===============================
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 
 # ===============================
-# SECURITY FLAGS
+# PRODUCTION SECURITY (RENDER FIX)
 # ===============================
 SECURE_SSL_REDIRECT = not DEBUG
+
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
+
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
+
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+X_FRAME_OPTIONS = 'DENY'
