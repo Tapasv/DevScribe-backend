@@ -3,6 +3,10 @@ import os
 from datetime import timedelta
 import dj_database_url
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
+
 # =====================================================
 # BASE DIR
 # =====================================================
@@ -46,6 +50,10 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
+    
+    # Cloudinary
+    "cloudinary_storage",
+    "cloudinary",
 
     "blog",
 ]
@@ -102,13 +110,26 @@ TEMPLATES = [
 # DATABASE
 # =====================================================
 
-DATABASES = {
-    "default": dj_database_url.config(
-        default=os.environ.get("DATABASE_URL"),
-        conn_max_age=600,
-        ssl_require=True,
-    )
-}
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+if DATABASE_URL and DATABASE_URL.startswith("postgresql"):
+    # Production or connecting to remote PostgreSQL
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=False,  # Allow external connections
+        )
+    }
+else:
+    # Local development with SQLite
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # =====================================================
@@ -122,15 +143,28 @@ USE_TZ = True
 
 
 # =====================================================
-# STATIC / MEDIA
+# STATIC FILES
 # =====================================================
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+
+# =====================================================
+# CLOUDINARY CONFIGURATION
+# =====================================================
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'di2ayzev4'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '625397468435941'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'FGpSjwU1DwP3-jEAGrj7siuPfzA'),
+}
+
+# Use Cloudinary for media files
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+MEDIA_URL = '/media/'
 
 
 # =====================================================
@@ -185,10 +219,11 @@ CSRF_TRUSTED_ORIGINS = [
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-SECURE_SSL_REDIRECT = True
-
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# Only enable SSL redirect in production
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True

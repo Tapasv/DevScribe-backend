@@ -18,6 +18,7 @@ from .serializers import (
     RegisterSerializer,
     ChangePasswordSerializer
 )
+from django.utils import timezone
 
 class IsAuthorOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -225,3 +226,15 @@ class CommentViewSet(viewsets.ModelViewSet):
             {'message': 'Comment submitted successfully! It will appear after approval.'},
             status=status.HTTP_201_CREATED
         )
+
+# Add this at the very end of backend/blog/views.py
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def health_check(request):
+    """Simple health check endpoint for cron jobs"""
+    return Response({
+        'status': 'ok', 
+        'message': 'DevScribe is alive',
+        'timestamp': str(timezone.now())
+    })

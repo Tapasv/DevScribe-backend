@@ -9,7 +9,8 @@ from .views import (
     login,
     logout,
     UserProfileView,
-    ChangePasswordView
+    ChangePasswordView,
+    health_check
 )
 
 router = DefaultRouter()
@@ -29,4 +30,6 @@ urlpatterns = [
     
     # Profile
     path('profile/', UserProfileView.as_view(), name='profile'),
+    
+    path('health/', health_check, name='health_check')
 ]
