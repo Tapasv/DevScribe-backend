@@ -201,6 +201,7 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "https://dev-scribe-frontend.vercel.app",
+    "https://dev-scribe-frontend-67fk.vercel.app",  # ADD THIS NEW URL
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -209,6 +210,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "https://dev-scribe-frontend.vercel.app",
     "https://devscribe-backend-a4ot.onrender.com",
+    "https://dev-scribe-frontend-67fk.vercel.app",  # ADD THIS NEW URL
 ]
 
 
